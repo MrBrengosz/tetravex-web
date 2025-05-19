@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tetravex Web</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .board, .tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .tile {
+      width: 80px;
+      height: 80px;
+      background-color: #e0e0e0;
+      border: 2px solid #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      position: relative;
+      user-select: none;
+    }
+    .tile span {
+      position: absolute;
+    }
+    .top { top: 2px; }
+    .bottom { bottom: 2px; }
+    .left { left: 2px; }
+    .right { right: 2px; }
+    .droppable {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tetravex Puzzle</h1>
+  <div class="tiles" id="tileContainer"></div>
+  <div class="board" id="boardContainer"></div>
+
+  <script>
+    const GRID_SIZE = 4;
+    const TILE_COUNT = GRID_SIZE * GRID_SIZE;
+
+    const generateTileData = () => {
+      const tiles = [];
+      for (let i = 0; i < TILE_COUNT; i++) {
+        tiles.push({
+          id: i,
+          top: Math.floor(Math.random() * 10),
+          right: Math.floor(Math.random() * 10),
+          bottom: Math.floor(Math.random() * 10),
+          left: Math.floor(Math.random() * 10),
+        });
+      }
+      return tiles;
+    };
+
+    const tileData = generateTileData();
+
+    const createTileElement = (tile) => {
+      const el = document.createElement("div");
+      el.className = "tile";
+      el.draggable = true;
+      el.id = `tile-${tile.id}`;
+
+      el.innerHTML = `
+        <span class="top">${tile.top}</span>
+        <span class="right">${tile.right}</span>
+        <span class="bottom">${tile.bottom}</span>
+        <span class="left">${tile.left}</span>
+      `;
+
+      el.ondragstart = (e) => {
+        e.dataTransfer.setData("text/plain", JSON.stringify(tile));
+      };
+
+      return el;
+    };
+
+    const tileContainer = document.getElementById("tileContainer");
+    tileData.forEach(tile => {
+      tileContainer.appendChild(createTileElement(tile));
+    });
+
+    const boardContainer = document.getElementById("boardContainer");
+    for (let i = 0; i < TILE_COUNT; i++) {
+      const dropZone = document.createElement("div");
+      dropZone.className = "tile droppable";
+
+      dropZone.ondragover = (e) => e.preventDefault();
+      dropZone.ondrop = (e) => {
+        e.preventDefault();
+        const tile = JSON.parse(e.dataTransfer.getData("text/plain"));
+        dropZone.innerHTML = `
+          <span class="top">${tile.top}</span>
+          <span class="right">${tile.right}</span>
+          <span class="bottom">${tile.bottom}</span>
+          <span class="left">${tile.left}</span>
+        `;
+        dropZone.classList.remove("droppable");
+      };
+
+      boardContainer.appendChild(dropZone);
+    }
+  </script>
+</body>
+</html>
